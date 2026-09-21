@@ -1,0 +1,1688 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Petualangan Mengenal Asmaul Husna - Class 5 SD</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                        nunito: ['Nunito', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            gold: '#FFC700',
+                            orange: '#FF8A00',
+                            green: '#2ECC71',
+                            teal: '#1ABC9C',
+                            blue: '#3498DB',
+                            purple: '#9B59B6',
+                            red: '#E74C3C',
+                            dark: '#2C3E50',
+                        }
+                    },
+                    animation: {
+                        'bounce-slow': 'bounce 2s infinite',
+                        'pulse-fast': 'pulse 1s infinite',
+                        'float': 'float 3s ease-in-out infinite',
+                        'spin-slow': 'spin 12s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            background-color: #0f172a;
+        }
+
+        .font-title {
+            font-family: 'Fredoka', cursive;
+        }
+
+        .btn-game {
+            transition: all 0.15s ease-in-out;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.25);
+        }
+
+        .btn-game:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.25);
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(10px);
+            border: 4px solid #ffffff;
+        }
+
+        .card-flip {
+            perspective: 1000px;
+        }
+
+        .card-inner {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .card-inner.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            backface-visibility: hidden;
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3b82f6;
+            border-radius: 10px;
+        }
+
+        /* Canvas Maze & Battle styling */
+        canvas {
+            touch-action: none;
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col justify-center items-center p-2 md:p-4 overflow-x-hidden bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900">
+
+    <div id="app-container" class="w-full max-w-4xl min-h-[640px] md:min-h-[680px] bg-slate-100 rounded-3xl shadow-2xl border-4 border-amber-400/80 relative overflow-hidden flex flex-col justify-between">
+        
+        <!-- TOP HUD BAR (Always Visible except Cover) -->
+        <header id="top-hud" class="hidden bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white p-3 px-4 md:px-6 shadow-md z-30 flex justify-between items-center border-b-4 border-amber-600">
+            <!-- Left: Level Info & Back Button -->
+            <div class="flex items-center space-x-2 md:space-x-3">
+                <button onclick="openMenuModal()" class="bg-amber-700 hover:bg-amber-800 text-white p-2 px-3 rounded-xl font-bold text-xs md:text-sm flex items-center space-x-1 border-b-2 border-amber-900 transition active:scale-95">
+                    <i class="fa-solid fa-house"></i>
+                    <span class="hidden sm:inline">Menu</span>
+                </button>
+                <div class="bg-amber-800/60 px-3 py-1 rounded-xl text-xs md:text-sm font-bold border border-amber-400/30">
+                    <span id="hud-level-text" class="text-amber-200">Peta Petualangan</span>
+                </div>
+            </div>
+
+            <!-- Center: Stats (Stars, Score, Lives) -->
+            <div class="flex items-center space-x-3 md:space-x-5 font-title">
+                <!-- Stars -->
+                <div class="flex items-center space-x-1 bg-amber-900/40 px-2.5 py-1 rounded-xl border border-amber-300/30">
+                    <i class="fa-solid fa-star text-yellow-300 text-base md:text-lg animate-pulse"></i>
+                    <span id="hud-stars" class="text-white text-sm md:text-base font-bold">0/10</span>
+                </div>
+                <!-- Score -->
+                <div class="flex items-center space-x-1 bg-amber-900/40 px-2.5 py-1 rounded-xl border border-amber-300/30">
+                    <i class="fa-solid fa-trophy text-amber-300 text-base md:text-lg"></i>
+                    <span id="hud-score" class="text-white text-sm md:text-base font-bold">0</span>
+                </div>
+                <!-- Lives -->
+                <div id="hud-lives-container" class="flex items-center space-x-1 bg-amber-900/40 px-2.5 py-1 rounded-xl border border-amber-300/30">
+                    <span id="hud-lives-icons" class="text-red-400 text-sm md:text-base">❤️❤️❤️</span>
+                </div>
+            </div>
+
+            <!-- Right: Sound & Material Button -->
+            <div class="flex items-center space-x-2">
+                <button id="btn-material" onclick="showMaterialModal()" class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-xl text-xs md:text-sm font-bold border-b-2 border-blue-800 transition active:scale-95 flex items-center space-x-1" title="Lihat Materi">
+                    <i class="fa-solid fa-book-open"></i>
+                    <span class="hidden md:inline">Materi</span>
+                </button>
+                <button id="btn-sound" onclick="toggleSound()" class="bg-amber-700 hover:bg-amber-800 text-white p-2 px-2.5 rounded-xl text-xs md:text-sm border-b-2 border-amber-900 transition active:scale-95" title="Mute/Unmute Suara">
+                    <i id="icon-sound" class="fa-solid fa-volume-high text-yellow-300"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT SCREEN CONTAINER -->
+        <main id="screen-container" class="flex-1 relative overflow-y-auto overflow-x-hidden flex flex-col justify-center items-center p-3 sm:p-6 bg-slate-50">
+            <!-- Dynamic Screens will be rendered here via JS -->
+        </main>
+
+        <!-- FOOTER PROGRESS BAR -->
+        <footer id="bottom-hud" class="hidden bg-slate-800 text-slate-300 px-4 py-2 text-xs flex justify-between items-center border-t border-slate-700 z-20">
+            <div class="flex items-center space-x-2 w-full max-w-md">
+                <span class="text-amber-400 font-bold whitespace-nowrap"><i class="fa-solid fa-compass mr-1"></i> Progres Misi:</span>
+                <div class="w-full bg-slate-700 h-3 rounded-full overflow-hidden border border-slate-600">
+                    <div id="hud-progress-bar" class="bg-gradient-to-r from-amber-400 to-green-400 h-full w-0 transition-all duration-500 rounded-full"></div>
+                </div>
+                <span id="hud-progress-percent" class="font-bold text-slate-200">0%</span>
+            </div>
+            <div class="hidden sm:block text-slate-400 text-[11px]">
+                PAI Kelas 5 SD • Asmaul Husna
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- GLOBAL MODALS CONTAINER -->
+    <div id="modal-container" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex justify-center items-center p-4 transition-opacity duration-300">
+        <!-- Content injected dynamically -->
+        <div id="modal-box" class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border-4 border-amber-400 relative animate-bounce-slow text-center max-h-[90vh] overflow-y-auto">
+            <!-- Modal Body -->
+        </div>
+    </div>
+
+    <script>
+        // Sound System using native Web Audio API (No external sound files required)
+        const SoundEngine = {
+            ctx: null,
+            muted: false,
+
+            init() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) this.ctx = new AudioCtx();
+                }
+            },
+
+            playTone(freq, type = 'sine', duration = 0.15, vol = 0.1) {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch (e) {
+                    console.log('Audio play error:', e);
+                }
+            },
+
+            playCorrect() {
+                if (this.muted) return;
+                this.playTone(523.25, 'sine', 0.1, 0.15); // C5
+                setTimeout(() => this.playTone(659.25, 'sine', 0.1, 0.15), 100); // E5
+                setTimeout(() => this.playTone(783.99, 'sine', 0.2, 0.2), 200); // G5
+            },
+
+            playWrong() {
+                if (this.muted) return;
+                this.playTone(300, 'sawtooth', 0.15, 0.15);
+                setTimeout(() => this.playTone(220, 'sawtooth', 0.25, 0.2), 120);
+            },
+
+            playClick() {
+                if (this.muted) return;
+                this.playTone(800, 'triangle', 0.05, 0.08);
+            },
+
+            playVictory() {
+                if (this.muted) return;
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, idx) => {
+                    setTimeout(() => this.playTone(freq, 'triangle', 0.25, 0.2), idx * 120);
+                });
+            },
+
+            playSpin() {
+                if (this.muted) return;
+                this.playTone(600, 'sine', 0.03, 0.05);
+            }
+        };
+
+        const ASMAUL_HUSNA_DATA = [
+            {
+                id: 'qawiyyu',
+                name: 'Al-Qawiyyu',
+                arabic: 'الْقَوِيُّ',
+                meaning: 'Maha Kuat',
+                desc: 'Allah memiliki kekuatan yang sempurna dan tidak terbatas. Tidak ada yang bisa mengalahkan kekuatan Allah.',
+                examples: [
+                    'Tidak mudah menyerah saat menghadapi kesulitan.',
+                    'Berusaha dengan sungguh-sungguh saat belajar.',
+                    'Selalu memohon kekuatan hanya kepada Allah SWT.'
+                ],
+                icon: 'fa-dumbbell',
+                color: 'from-amber-500 to-orange-600'
+            },
+            {
+                id: 'qayyum',
+                name: 'Al-Qayyum',
+                arabic: 'الْقَيُّومُ',
+                meaning: 'Maha Berdiri Sendiri / Maha Menegakkan',
+                desc: 'Allah mengatur dan memenuhi kebutuhan seluruh makhluk-Nya tanpa membutuhkan bantuan siapapun.',
+                examples: [
+                    'Menjadi pribadi yang mandiri (menyiapkan peralatan sekolah sendiri).',
+                    'Selalu menyadari bahwa kita sangat membutuhkan pertolongan Allah.',
+                    'Membantu sesama tanpa merugikan orang lain.'
+                ],
+                icon: 'fa-mountain',
+                color: 'from-emerald-500 to-teal-700'
+            },
+            {
+                id: 'muhyi',
+                name: 'Al-Muhyi',
+                arabic: 'الْمُحْيِي',
+                meaning: 'Maha Menghidupkan',
+                desc: 'Allah adalah satu-satunya pencipta yang memberikan kehidupan kepada seluruh manusia, hewan, dan tumbuhan.',
+                examples: [
+                    'Bersyukur atas nikmat sehat dan kehidupan yang diberikan Allah.',
+                    'Merawat tanaman dan menyayangi hewan di sekitar kita.',
+                    'Menjaga kelestarian lingkungan hidup.'
+                ],
+                icon: 'fa-seedling',
+                color: 'from-green-500 to-emerald-600'
+            },
+            {
+                id: 'mumit',
+                name: 'Al-Mumit',
+                arabic: 'الْمُمِيتُ',
+                meaning: 'Maha Mematikan',
+                desc: 'Allah menentukan masa hidup dan kematian setiap makhluk di alam semesta ini.',
+                examples: [
+                    'Mengingat bahwa kehidupan di dunia ini hanya sementara.',
+                    'Memanfaatkan waktu sebaik mungkin untuk berbuat kebaikan.',
+                    'Menjauhi perbuatan dosa dan maksiat.'
+                ],
+                icon: 'fa-hourglass-end',
+                color: 'from-purple-600 to-indigo-800'
+            },
+            {
+                id: 'baits',
+                name: 'Al-Ba’its',
+                arabic: 'الْبَاعِثُ',
+                meaning: 'Maha Membangkitkan',
+                desc: 'Allah akan membangkitkan kembali seluruh manusia dari alam kubur pada hari kebangkitan (Hari Kiamat).',
+                examples: [
+                    'Memperbanyak amal saleh sebagai bekal di akhirat kelak.',
+                    'Percaya dan meyakini adanya hari pembalasan.',
+                    'Selalu jujur dan bertanggung jawab atas semua tindakan.'
+                ],
+                icon: 'fa-sun',
+                color: 'from-blue-500 to-cyan-600'
+            }
+        ];
+
+        let gameState = {
+            score: 0,
+            stars: 0,
+            unlockedLevel: 1,
+            currentLevel: 1,
+            lives: 3,
+            completedLevels: [],
+            assessmentCompleted: false,
+            assessmentScore: 0
+        };
+
+        // Load progress from localStorage if exists
+        function loadSavedState() {
+            try {
+                const saved = localStorage.getItem('asmaul_husna_adventure_save');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    gameState = { ...gameState, ...parsed };
+                }
+            } catch(e) {
+                console.log('Error loading save state');
+            }
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem('asmaul_husna_adventure_save', JSON.stringify(gameState));
+            } catch(e) {}
+        }
+
+        function updateHUD() {
+            document.getElementById('hud-stars').innerText = `${gameState.stars}/10`;
+            document.getElementById('hud-score').innerText = gameState.score;
+            
+            // Lives icons
+            let hearts = '';
+            for (let i = 0; i < 3; i++) {
+                if (i < gameState.lives) hearts += '❤️';
+                else hearts += '🖤';
+            }
+            document.getElementById('hud-lives-icons').innerText = hearts;
+
+            // Level text
+            if (gameState.currentLevel > 0) {
+                document.getElementById('hud-level-text').innerText = `Level ${gameState.currentLevel}`;
+            } else {
+                document.getElementById('hud-level-text').innerText = `Peta Petualangan`;
+            }
+
+            // Progress bar
+            const percent = Math.min(100, Math.round((gameState.stars / 10) * 100));
+            document.getElementById('hud-progress-bar').style.width = `${percent}%`;
+            document.getElementById('hud-progress-percent').innerText = `${percent}%`;
+        }
+
+        function toggleSound() {
+            SoundEngine.muted = !SoundEngine.muted;
+            const icon = document.getElementById('icon-sound');
+            if (SoundEngine.muted) {
+                icon.className = 'fa-solid fa-volume-xmark text-slate-400';
+            } else {
+                icon.className = 'fa-solid fa-volume-high text-yellow-300';
+                SoundEngine.playClick();
+            }
+        }
+
+        function showScreen(screenHtml, hideHud = false) {
+            const container = document.getElementById('screen-container');
+            const hud = document.getElementById('top-hud');
+            const bottomHud = document.getElementById('bottom-hud');
+
+            if (hideHud) {
+                hud.classList.add('hidden');
+                bottomHud.classList.add('hidden');
+            } else {
+                hud.classList.remove('hidden');
+                bottomHud.classList.remove('hidden');
+                updateHUD();
+            }
+
+            container.innerHTML = screenHtml;
+            container.scrollTop = 0;
+        }
+
+        function renderCoverScreen() {
+            gameState.currentLevel = 0;
+            const html = `
+                <div class="flex flex-col items-center justify-center text-center p-4 md:p-8 my-auto max-w-2xl">
+                    <div class="relative mb-6 animate-float">
+                        <div class="w-32 h-32 md:w-44 md:h-44 bg-gradient-to-tr from-amber-400 via-orange-500 to-yellow-300 rounded-full flex items-center justify-center shadow-xl border-4 border-amber-200">
+                            <i class="fa-solid fa-mosque text-5xl md:text-7xl text-white drop-shadow-md"></i>
+                        </div>
+                        <div class="absolute -top-2 -right-2 bg-amber-300 text-amber-900 rounded-full p-2 text-xl font-bold border-2 border-white shadow-lg">
+                            ⭐ SD 5
+                        </div>
+                    </div>
+
+                    <h1 class="text-3xl md:text-5xl font-extrabold font-title text-transparent bg-clip-text bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 mb-2 drop-shadow">
+                        PETUALANGAN ASMAUL HUSNA
+                    </h1>
+                    <p class="text-slate-600 font-semibold text-sm md:text-lg mb-8 leading-relaxed">
+                        "Kenali Nama-Nama Allah, Taklukkan 10 Tantangan Seru, Raih Bintang, dan Buka Kuil Asmaul Husna!"
+                    </p>
+
+                    <div class="flex flex-col sm:flex-row gap-4 w-full justify-center">
+                        <button onclick="SoundEngine.playClick(); renderMainMenu();" class="btn-game bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-title text-xl md:text-2xl px-8 py-4 rounded-2xl border-b-4 border-green-800 shadow-lg flex items-center justify-center space-x-3 transition active:scale-95">
+                            <i class="fa-solid fa-play text-yellow-300"></i>
+                            <span>MULAI PETUALANGAN</span>
+                        </button>
+                    </div>
+
+                    <div class="mt-8 text-xs text-slate-400">
+                        Materi: Al-Qawiyyu • Al-Qayyum • Al-Muhyi • Al-Mumit • Al-Ba’its
+                    </div>
+                </div>
+            `;
+            showScreen(html, true);
+        }
+
+        function renderMainMenu() {
+            gameState.currentLevel = 0;
+            const html = `
+                <div class="flex flex-col items-center justify-center w-full max-w-lg p-4 my-auto">
+                    <div class="text-center mb-6">
+                        <h2 class="text-2xl md:text-3xl font-title font-bold text-amber-600 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-compass text-orange-500"></i> Menu Utama
+                        </h2>
+                        <p class="text-xs md:text-sm text-slate-500">Pilih menu untuk memulai petualanganmu!</p>
+                    </div>
+
+                    <div class="flex flex-col gap-3.5 w-full">
+                        <button onclick="SoundEngine.playClick(); renderMapScreen();" class="btn-game bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white p-4 rounded-2xl font-title text-lg md:text-xl border-b-4 border-orange-700 flex items-center justify-between px-6 shadow-md">
+                            <div class="flex items-center space-x-3">
+                                <i class="fa-solid fa-map-location-dot text-2xl text-yellow-200"></i>
+                                <span>Peta Petualangan (Level)</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+
+                        <button onclick="SoundEngine.playClick(); renderMaterialScreen();" class="btn-game bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-4 rounded-2xl font-title text-lg md:text-xl border-b-4 border-indigo-800 flex items-center justify-between px-6 shadow-md">
+                            <div class="flex items-center space-x-3">
+                                <i class="fa-solid fa-book-open-reader text-2xl text-blue-200"></i>
+                                <span>Materi Asmaul Husna</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+
+                        <button onclick="SoundEngine.playClick(); renderHowToPlayScreen();" class="btn-game bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white p-4 rounded-2xl font-title text-lg md:text-xl border-b-4 border-emerald-800 flex items-center justify-between px-6 shadow-md">
+                            <div class="flex items-center space-x-3">
+                                <i class="fa-solid fa-circle-question text-2xl text-teal-200"></i>
+                                <span>Cara Bermain</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+
+                        <button onclick="SoundEngine.playClick(); renderAchievementsScreen();" class="btn-game bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white p-4 rounded-2xl font-title text-lg md:text-xl border-b-4 border-pink-800 flex items-center justify-between px-6 shadow-md">
+                            <div class="flex items-center space-x-3">
+                                <i class="fa-solid fa-award text-2xl text-pink-200"></i>
+                                <span>Prestasi & Bintang</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+
+                        ${gameState.stars >= 10 ? `
+                        <button onclick="SoundEngine.playClick(); renderAssessmentScreen();" class="btn-game bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-amber-950 p-4 rounded-2xl font-title text-lg md:text-xl border-b-4 border-amber-700 flex items-center justify-between px-6 shadow-md animate-pulse">
+                            <div class="flex items-center space-x-3">
+                                <i class="fa-solid fa-graduation-cap text-2xl text-amber-900"></i>
+                                <span>Asesmen Akhir (Uji Pemahaman)</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            showScreen(html, false);
+        }
+
+        function renderMapScreen() {
+            gameState.currentLevel = 0;
+            const levelTitles = [
+                "Gerbang Lima Nama",
+                "Hutan Pasangan",
+                "Jembatan Makna",
+                "Labirin Asmaul Husna",
+                "Harta Karun Akhlak",
+                "Tebak Gambar",
+                "Roda Keberuntungan",
+                "Kode Rahasia",
+                "Pertarungan Pengetahuan",
+                "Kuil Asmaul Husna"
+            ];
+
+            let nodesHtml = '';
+            for (let i = 1; i <= 10; i++) {
+                const isUnlocked = i <= gameState.unlockedLevel;
+                const isCompleted = gameState.completedLevels.includes(i);
+                
+                let btnStyle = "bg-slate-300 text-slate-500 border-slate-400 cursor-not-allowed";
+                let starIcon = `<i class="fa-solid fa-lock text-slate-400"></i>`;
+                
+                if (isUnlocked) {
+                    if (isCompleted) {
+                        btnStyle = "bg-gradient-to-b from-amber-400 to-orange-500 text-white border-amber-700 shadow-lg hover:scale-105";
+                        starIcon = `<i class="fa-solid fa-star text-yellow-200"></i>`;
+                    } else {
+                        btnStyle = "bg-gradient-to-b from-emerald-400 to-green-600 text-white border-green-800 shadow-lg hover:scale-105 animate-bounce-slow";
+                        starIcon = `<i class="fa-regular fa-star text-white"></i>`;
+                    }
+                }
+
+                nodesHtml += `
+                    <div class="flex flex-col items-center relative my-2">
+                        <button ${isUnlocked ? `onclick="startLevel(${i})"` : ''} class="w-14 h-14 md:w-16 md:h-16 rounded-2xl border-b-4 flex flex-col items-center justify-center font-title text-lg font-bold transition active:scale-95 ${btnStyle}">
+                            <span>${i}</span>
+                            <div class="text-xs mt-0.5">${starIcon}</div>
+                        </button>
+                        <span class="text-[11px] md:text-xs font-bold text-slate-700 mt-1 max-w-[100px] text-center leading-tight bg-white/80 px-1.5 py-0.5 rounded-md border border-slate-200">
+                            ${levelTitles[i-1]}
+                        </span>
+                    </div>
+                `;
+            }
+
+            const html = `
+                <div class="w-full max-w-3xl flex flex-col items-center p-2 sm:p-4 my-auto">
+                    <div class="text-center mb-4">
+                        <h2 class="text-2xl md:text-3xl font-title font-bold text-amber-600">
+                            🗺️ Peta Petualangan
+                        </h2>
+                        <p class="text-xs md:text-sm text-slate-600">Selesaikan level secara berurutan untuk mengumpulkan 10 Bintang!</p>
+                    </div>
+
+                    <div class="w-full bg-amber-50/80 rounded-3xl p-4 md:p-6 border-4 border-amber-300 shadow-inner relative overflow-hidden">
+                        <!-- Decorative Map Path Grid -->
+                        <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 md:gap-6 justify-items-center relative z-10">
+                            ${nodesHtml}
+                        </div>
+                    </div>
+
+                    ${gameState.stars >= 10 ? `
+                        <div class="mt-4 w-full">
+                            <button onclick="SoundEngine.playClick(); renderAssessmentScreen();" class="btn-game w-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white font-title text-lg md:text-xl py-3.5 px-6 rounded-2xl border-b-4 border-orange-800 shadow-xl flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-trophy text-yellow-300 text-2xl"></i>
+                                <span>SEMUA LEVEL SELESAI! MASUK KE ASESMEN AKHIR</span>
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            showScreen(html, false);
+        }
+
+        function renderMaterialScreen() {
+            let cardsHtml = ASMAUL_HUSNA_DATA.map(item => `
+                <div class="bg-white rounded-2xl p-4 md:p-5 border-2 border-slate-200 shadow-sm hover:shadow-md transition">
+                    <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br ${item.color} text-white flex items-center justify-center text-lg md:text-xl shadow">
+                                <i class="fa-solid ${item.icon}"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-title font-bold text-lg md:text-xl text-slate-800">${item.name}</h3>
+                                <p class="text-xs font-bold text-amber-600">${item.meaning}</p>
+                            </div>
+                        </div>
+                        <div class="text-2xl md:text-3xl font-bold font-serif text-slate-700">${item.arabic}</div>
+                    </div>
+
+                    <p class="text-xs md:text-sm text-slate-600 mb-3 leading-relaxed">${item.desc}</p>
+
+                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                        <div class="text-[11px] font-bold text-slate-500 mb-1">Contoh Sikap & Penerapan:</div>
+                        <ul class="list-disc list-inside text-xs text-slate-700 space-y-1">
+                            ${item.examples.map(ex => `<li>${ex}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `).join('');
+
+            const html = `
+                <div class="w-full max-w-3xl flex flex-col p-2 sm:p-4 my-auto">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h2 class="text-2xl font-title font-bold text-blue-600 flex items-center gap-2">
+                                <i class="fa-solid fa-book"></i> Ringkasan Materi
+                            </h2>
+                            <p class="text-xs text-slate-500">Materi Pendidikan Agama Islam Kelas 5 SD</p>
+                        </div>
+                        <button onclick="SoundEngine.playClick(); renderMainMenu();" class="bg-slate-200 hover:bg-slate-300 text-slate-700 p-2 px-3 rounded-xl font-bold text-xs">
+                            Kembali
+                        </button>
+                    </div>
+
+                    <div class="space-y-4 max-h-[480px] overflow-y-auto pr-1">
+                        ${cardsHtml}
+                    </div>
+                </div>
+            `;
+            showScreen(html, false);
+        }
+
+        function renderHowToPlayScreen() {
+            const html = `
+                <div class="w-full max-w-2xl bg-white p-6 rounded-3xl border-4 border-teal-400 shadow-xl my-auto">
+                    <h2 class="text-2xl font-title font-bold text-teal-600 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-info"></i> Cara Bermain
+                    </h2>
+
+                    <div class="space-y-3 text-xs md:text-sm text-slate-700 leading-relaxed">
+                        <div class="flex items-start space-x-3 bg-teal-50 p-3 rounded-xl">
+                            <span class="bg-teal-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs shrink-0">1</span>
+                            <p><strong>Petualangan 10 Level:</strong> Selesaikan misi dari Level 1 sampai Level 10 secara berurutan.</p>
+                        </div>
+                        <div class="flex items-start space-x-3 bg-teal-50 p-3 rounded-xl">
+                            <span class="bg-teal-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs shrink-0">2</span>
+                            <p><strong>Bintang & Nyawa:</strong> Kamu mendapatkan 1 bintang di setiap level yang berhasil dituntaskan. Hati-hati, kamu memiliki 3 nyawa ❤️!</p>
+                        </div>
+                        <div class="flex items-start space-x-3 bg-teal-50 p-3 rounded-xl">
+                            <span class="bg-teal-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs shrink-0">3</span>
+                            <p><strong>Beragam Tantangan:</strong> Pilihan ganda cepat, mencocokkan kartu, jembatan jalan, labirin maze, harta karun, tebak gambar, roda putar, susun kata, hingga pertarungan boss!</p>
+                        </div>
+                        <div class="flex items-start space-x-3 bg-teal-50 p-3 rounded-xl">
+                            <span class="bg-teal-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs shrink-0">4</span>
+                            <p><strong>Asesmen Akhir:</strong> Setelah menyelesaikan 10 level, kamu bisa menguji pemahaman akhirmu untuk mendapatkan Sertifikat Kelulusan.</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 text-center">
+                        <button onclick="SoundEngine.playClick(); renderMainMenu();" class="btn-game bg-teal-500 hover:bg-teal-600 text-white font-title text-base px-6 py-2.5 rounded-xl border-b-4 border-teal-700">
+                            Mengerti & Kembali
+                        </button>
+                    </div>
+                </div>
+            `;
+            showScreen(html, false);
+        }
+
+        function renderAchievementsScreen() {
+            const html = `
+                <div class="w-full max-w-2xl bg-white p-6 rounded-3xl border-4 border-purple-400 shadow-xl my-auto text-center">
+                    <h2 class="text-2xl font-title font-bold text-purple-600 mb-2 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-medal"></i> Prestasi & Pencapaian
+                    </h2>
+                    <p class="text-xs text-slate-500 mb-6">Pencapaian Petualangan Asmaul Husna</p>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-purple-50 p-4 rounded-2xl border border-purple-200">
+                            <div class="text-3xl text-yellow-500 mb-1"><i class="fa-solid fa-star"></i></div>
+                            <div class="font-title font-bold text-xl text-purple-900">${gameState.stars}/10</div>
+                            <div class="text-xs text-slate-500">Bintang Terkumpul</div>
+                        </div>
+                        <div class="bg-purple-50 p-4 rounded-2xl border border-purple-200">
+                            <div class="text-3xl text-amber-500 mb-1"><i class="fa-solid fa-trophy"></i></div>
+                            <div class="font-title font-bold text-xl text-purple-900">${gameState.score}</div>
+                            <div class="text-xs text-slate-500">Total Skor</div>
+                        </div>
+                        <div class="bg-purple-50 p-4 rounded-2xl border border-purple-200 col-span-2 sm:col-span-1">
+                            <div class="text-3xl text-green-500 mb-1"><i class="fa-solid fa-flag-checkered"></i></div>
+                            <div class="font-title font-bold text-xl text-purple-900">${gameState.completedLevels.length}/10</div>
+                            <div class="text-xs text-slate-500">Level Selesai</div>
+                        </div>
+                    </div>
+
+                    <button onclick="SoundEngine.playClick(); renderMainMenu();" class="btn-game bg-purple-600 hover:bg-purple-700 text-white font-title text-base px-6 py-2.5 rounded-xl border-b-4 border-purple-800">
+                        Kembali ke Menu
+                    </button>
+                </div>
+            `;
+            showScreen(html, false);
+        }
+
+        function showMaterialModal() {
+            SoundEngine.playClick();
+            let items = ASMAUL_HUSNA_DATA.map(d => `
+                <div class="text-left bg-slate-50 p-3 rounded-xl border border-slate-200 mb-2">
+                    <div class="font-bold text-slate-800 text-sm">${d.name} (${d.arabic})</div>
+                    <div class="text-xs text-amber-600 font-semibold mb-1">Artinya: ${d.meaning}</div>
+                    <div class="text-xs text-slate-600">${d.desc}</div>
+                </div>
+            `).join('');
+
+            const modalBox = document.getElementById('modal-box');
+            modalBox.innerHTML = `
+                <h3 class="text-xl font-title font-bold text-blue-600 mb-3"><i class="fa-solid fa-book"></i> Catatan Materi</h3>
+                <div class="max-h-[60vh] overflow-y-auto pr-1">
+                    ${items}
+                </div>
+                <button onclick="closeModal()" class="mt-4 bg-blue-600 text-white font-bold px-6 py-2 rounded-xl border-b-2 border-blue-800">Tutup</button>
+            `;
+            document.getElementById('modal-container').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modal-container').classList.add('hidden');
+        }
+
+        function openMenuModal() {
+            SoundEngine.playClick();
+            const modalBox = document.getElementById('modal-box');
+            modalBox.innerHTML = `
+                <h3 class="text-xl font-title font-bold text-slate-800 mb-2"><i class="fa-solid fa-pause"></i> Permainan Dihentikan</h3>
+                <p class="text-xs text-slate-500 mb-6">Apakah kamu ingin kembali ke Peta Petualangan?</p>
+                <div class="flex justify-center space-x-3">
+                    <button onclick="closeModal()" class="bg-slate-300 hover:bg-slate-400 text-slate-800 font-bold px-4 py-2 rounded-xl text-sm">Lanjutkan Game</button>
+                    <button onclick="closeModal(); renderMapScreen();" class="bg-red-500 hover:bg-red-600 text-white font-bold px-4 py-2 rounded-xl text-sm">Kembali ke Peta</button>
+                </div>
+            `;
+            document.getElementById('modal-container').classList.remove('hidden');
+        }
+
+        function handleWrongAnswer(customMsg) {
+            SoundEngine.playWrong();
+            gameState.lives--;
+            updateHUD();
+
+            if (gameState.lives <= 0) {
+                // Game Over modal
+                const modalBox = document.getElementById('modal-box');
+                modalBox.innerHTML = `
+                    <div class="text-5xl text-red-500 mb-2"><i class="fa-solid fa-heart-crack"></i></div>
+                    <h3 class="text-2xl font-title font-bold text-red-600 mb-2">Nyawa Habis!</h3>
+                    <p class="text-xs text-slate-600 mb-6">Jangan menyerah! Kamu masih punya banyak kesempatan untuk belajar.</p>
+                    <div class="flex justify-center space-x-3">
+                        <button onclick="closeModal(); restartCurrentLevel();" class="bg-amber-500 text-white font-bold px-5 py-2.5 rounded-xl border-b-2 border-amber-700">Coba Lagi Level Ini</button>
+                        <button onclick="closeModal(); renderMapScreen();" class="bg-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl">Ke Peta</button>
+                    </div>
+                `;
+                document.getElementById('modal-container').classList.remove('hidden');
+            } else {
+                // Warning modal
+                const modalBox = document.getElementById('modal-box');
+                modalBox.innerHTML = `
+                    <div class="text-4xl text-amber-500 mb-2"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <h3 class="text-xl font-title font-bold text-slate-800 mb-1">Hampir Benar!</h3>
+                    <p class="text-xs text-slate-600 mb-4">${customMsg || 'Perhatikan kembali petunjuk materi.'}</p>
+                    <p class="text-xs font-bold text-red-500 mb-4">Sisa Nyawa: ${'❤️'.repeat(gameState.lives)}</p>
+                    <button onclick="closeModal()" class="bg-amber-500 text-white font-bold px-6 py-2 rounded-xl">Lanjutkan</button>
+                `;
+                document.getElementById('modal-container').classList.remove('hidden');
+            }
+        }
+
+        function handleLevelComplete(gainedScore = 20) {
+            SoundEngine.playVictory();
+            gameState.score += gainedScore;
+            
+            if (!gameState.completedLevels.includes(gameState.currentLevel)) {
+                gameState.completedLevels.push(gameState.currentLevel);
+                gameState.stars++;
+            }
+
+            if (gameState.unlockedLevel === gameState.currentLevel && gameState.unlockedLevel < 10) {
+                gameState.unlockedLevel++;
+            }
+
+            saveState();
+            updateHUD();
+
+            const isFinalLevel = gameState.currentLevel === 10;
+            const modalBox = document.getElementById('modal-box');
+
+            modalBox.innerHTML = `
+                <div class="text-5xl text-yellow-400 mb-2 animate-bounce"><i class="fa-solid fa-star"></i></div>
+                <h3 class="text-2xl font-title font-bold text-amber-600 mb-1">Misi Berhasil! 🎉</h3>
+                <p class="text-xs text-slate-600 mb-4">Kamu mendapatkan <strong class="text-amber-600">+1 Bintang ⭐</strong> dan <strong class="text-amber-600">+${gainedScore} Poin</strong>!</p>
+                <div class="bg-amber-50 p-3 rounded-2xl border border-amber-200 mb-6 inline-block">
+                    <span class="text-xs font-bold text-slate-700">Total Skor: ${gameState.score} | Bintang: ${gameState.stars}/10</span>
+                </div>
+                <div class="flex justify-center space-x-3">
+                    ${isFinalLevel ? `
+                        <button onclick="closeModal(); renderAssessmentScreen();" class="bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold px-6 py-3 rounded-xl border-b-2 border-orange-700 animate-pulse">Lanjut ke Asesmen Akhir 🎓</button>
+                    ` : `
+                        <button onclick="closeModal(); startLevel(${gameState.currentLevel + 1});" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-6 py-3 rounded-xl border-b-2 border-emerald-700">Lanjut Level Berikutnya ➡️</button>
+                    `}
+                </div>
+            `;
+            document.getElementById('modal-container').classList.remove('hidden');
+        }
+
+        function restartCurrentLevel() {
+            gameState.lives = 3;
+            startLevel(gameState.currentLevel);
+        }
+
+        function startLevel(lvlNum) {
+            gameState.currentLevel = lvlNum;
+            if (gameState.lives <= 0) gameState.lives = 3;
+            updateHUD();
+
+            switch(lvlNum) {
+                case 1: level1_GerbangLimaNama(); break;
+                case 2: level2_HutanPasangan(); break;
+                case 3: level3_JembatanMakna(); break;
+                case 4: level4_LabirinAsmaulHusna(); break;
+                case 5: level5_HartaKarunAkhlak(); break;
+                case 6: level6_TebakGambar(); break;
+                case 7: level7_RodaKeberuntungan(); break;
+                case 8: level8_KodeRahasia(); break;
+                case 9: level9_PertarunganPengetahuan(); break;
+                case 10: level10_KuilAsmaulHusna(); break;
+                default: renderMapScreen();
+            }
+        }
+
+        function level1_GerbangLimaNama() {
+            const questions = [
+                { q: "Allah Maha Kuat dan tidak terbatas kekuatan-Nya disebut...", correct: "Al-Qawiyyu", options: ["Al-Qawiyyu", "Al-Muhyi", "Al-Ba’its", "Al-Mumit"] },
+                { q: "Allah Maha Berdiri Sendiri dan tidak membutuhkan bantuan makhluk-Nya adalah...", correct: "Al-Qayyum", options: ["Al-Mumit", "Al-Qayyum", "Al-Qawiyyu", "Al-Muhyi"] },
+                { q: "Allah Maha Menghidupkan seluruh makhluk di alam semesta adalah...", correct: "Al-Muhyi", options: ["Al-Ba’its", "Al-Mumit", "Al-Muhyi", "Al-Qayyum"] },
+                { q: "Allah Maha Mematikan yang menentukan ajal setiap makhluk adalah...", correct: "Al-Mumit", options: ["Al-Mumit", "Al-Qawiyyu", "Al-Muhyi", "Al-Ba’its"] },
+                { q: "Allah Maha Membangkitkan manusia pada hari kiamat kelak adalah...", correct: "Al-Ba’its", options: ["Al-Qayyum", "Al-Ba’its", "Al-Qawiyyu", "Al-Muhyi"] }
+            ];
+
+            let curIndex = 0;
+
+            function renderQ() {
+                const qData = questions[curIndex];
+                const html = `
+                    <div class="w-full max-w-xl bg-white p-5 md:p-6 rounded-3xl border-4 border-amber-400 shadow-xl my-auto">
+                        <div class="flex justify-between items-center mb-4 border-b pb-2">
+                            <span class="text-xs font-bold bg-amber-100 text-amber-800 px-3 py-1 rounded-full">LEVEL 1: Gerbang Lima Nama</span>
+                            <span class="text-xs font-bold text-slate-500">Soal ${curIndex+1}/5</span>
+                        </div>
+
+                        <div class="text-center my-6">
+                            <h3 class="text-lg md:text-xl font-title font-bold text-slate-800 leading-snug">"${qData.q}"</h3>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                            ${qData.options.map(opt => `
+                                <button onclick="checkL1('${opt}')" class="btn-game bg-slate-100 hover:bg-amber-500 hover:text-white text-slate-800 font-title font-bold text-base p-3.5 rounded-2xl border-2 border-slate-300 text-center transition">
+                                    ${opt}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                showScreen(html, false);
+            }
+
+            window.checkL1 = function(selected) {
+                if (selected === questions[curIndex].correct) {
+                    SoundEngine.playCorrect();
+                    curIndex++;
+                    if (curIndex >= questions.length) {
+                        handleLevelComplete(20);
+                    } else {
+                        renderQ();
+                    }
+                } else {
+                    handleWrongAnswer("Pilihan kurang tepat! Ingat kembali arti dari masing-masing Asmaul Husna.");
+                }
+            };
+
+            renderQ();
+        }
+
+        function level2_HutanPasangan() {
+            const pairs = [
+                { id: 1, text: "Al-Qawiyyu", matchId: 101 },
+                { id: 101, text: "Maha Kuat", matchId: 1 },
+                { id: 2, text: "Al-Qayyum", matchId: 102 },
+                { id: 102, text: "Maha Berdiri Sendiri", matchId: 2 },
+                { id: 3, text: "Al-Muhyi", matchId: 103 },
+                { id: 103, text: "Maha Menghidupkan", matchId: 3 },
+                { id: 4, text: "Al-Mumit", matchId: 104 },
+                { id: 104, text: "Maha Mematikan", matchId: 4 },
+                { id: 5, text: "Al-Ba’its", matchId: 105 },
+                { id: 105, text: "Maha Membangkitkan", matchId: 5 },
+            ];
+
+            // Shuffle
+            const cards = [...pairs].sort(() => Math.random() - 0.5);
+
+            let selectedCards = [];
+            let matchedPairs = [];
+
+            function renderCards() {
+                const gridHtml = cards.map((c, idx) => {
+                    const isMatched = matchedPairs.includes(c.id);
+                    const isSelected = selectedCards.some(sc => sc.idx === idx);
+
+                    let cardClass = "bg-amber-100 border-amber-300 text-amber-900";
+                    if (isMatched) cardClass = "bg-green-500 border-green-700 text-white opacity-60 cursor-default";
+                    else if (isSelected) cardClass = "bg-blue-500 border-blue-700 text-white scale-105";
+
+                    return `
+                        <button ${isMatched ? '' : `onclick="clickL2Card(${idx})"`} class="h-20 sm:h-24 p-2 rounded-2xl border-b-4 font-title font-bold text-xs sm:text-sm flex items-center justify-center text-center shadow-md transition ${cardClass}">
+                            ${c.text}
+                        </button>
+                    `;
+                }).join('');
+
+                const html = `
+                    <div class="w-full max-w-2xl bg-white p-4 sm:p-6 rounded-3xl border-4 border-emerald-400 shadow-xl my-auto">
+                        <div class="flex justify-between items-center mb-4 border-b pb-2">
+                            <span class="text-xs font-bold bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full">LEVEL 2: Hutan Pasangan</span>
+                            <span class="text-xs font-bold text-slate-500">Pasangkan Asmaul Husna & Artinya (${matchedPairs.length / 2}/5)</span>
+                        </div>
+
+                        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 mb-2">
+                            ${gridHtml}
+                        </div>
+                    </div>
+                `;
+                showScreen(html, false);
+            }
+
+            window.clickL2Card = function(idx) {
+                if (selectedCards.length === 1 && selectedCards[0].idx === idx) return;
+
+                SoundEngine.playClick();
+                selectedCards.push({ idx, card: cards[idx] });
+                renderCards();
+
+                if (selectedCards.length === 2) {
+                    const [c1, c2] = selectedCards;
+                    if (c1.card.matchId === c2.card.id) {
+                        // Match!
+                        SoundEngine.playCorrect();
+                        matchedPairs.push(c1.card.id, c2.card.id);
+                        selectedCards = [];
+                        setTimeout(() => {
+                            if (matchedPairs.length === cards.length) {
+                                handleLevelComplete(20);
+                            } else {
+                                renderCards();
+                            }
+                        }, 300);
+                    } else {
+                        // Fail match
+                        setTimeout(() => {
+                            handleWrongAnswer("Pasangan kartu belum cocok, coba lagi!");
+                            selectedCards = [];
+                            renderCards();
+                        }, 500);
+                    }
+                }
+            };
+
+            renderCards();
+        }
+
+        function level3_JembatanMakna() {
+            const scenarios = [
+                {
+                    story: "Rani selalu bersyukur karena Allah memberikan kehidupan, nafas, dan kesehatan kepada seluruh manusia dan tanaman. Asmaul Husna yang sesuai adalah...",
+                    correct: "Al-Muhyi",
+                    options: ["Al-Muhyi", "Al-Mumit", "Al-Qawiyyu", "Al-Ba’its"]
+                },
+                {
+                    story: "Doni selalu berusaha belajar mandiri tanpa terus bergantung pada orang lain karena ia meneladani sifat Allah Yang Maha Berdiri Sendiri, yaitu...",
+                    correct: "Al-Qayyum",
+                    options: ["Al-Ba’its", "Al-Qayyum", "Al-Mumit", "Al-Qawiyyu"]
+                },
+                {
+                    story: "Ahmad tidak cepat putus asa saat berlatih olahraga. Ia selalu berdoa meminta kekuatan kepada Allah SWT Yang Maha Kuat, yaitu...",
+                    correct: "Al-Qawiyyu",
+                    options: ["Al-Qawiyyu", "Al-Muhyi", "Al-Ba’its", "Al-Qayyum"]
+                }
+            ];
+
+            let curStep = 0;
+
+            function renderBridge() {
+                const s = scenarios[curStep];
+                const html = `
+                    <div class="w-full max-w-xl bg-white p-5 md:p-6 rounded-3xl border-4 border-blue-400 shadow-xl my-auto text-center">
+                        <div class="flex justify-between items-center mb-3 border-b pb-2">
+                            <span class="text-xs font-bold bg-blue-100 text-blue-800 px-3 py-1 rounded-full">LEVEL 3: Jembatan Makna</span>
+                            <span class="text-xs font-bold text-slate-500">Jembatan ${curStep+1}/${scenarios.length}</span>
+                        </div>
+
+                        <!-- Mini Character Avatar -->
+                        <div class="text-4xl my-2 animate-bounce-slow">🏃‍♂️ Bridge Adventure</div>
+
+                        <div class="bg-blue-50 p-4 rounded-2xl border border-blue-200 my-4 text-xs md:text-sm text-slate-700 font-semibold leading-relaxed">
+                            "${s.story}"
+                        </div>
+
+                        <p class="text-xs font-bold text-slate-500 mb-3">Pilih Jembatan Jawaban yang Benar untuk Menyeberang:</p>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            ${s.options.map(opt => `
+                                <button onclick="crossBridge('${opt}')" class="btn-game bg-amber-500 hover:bg-amber-600 text-white font-title font-bold text-base p-3.5 rounded-2xl border-b-4 border-amber-700 flex items-center justify-center space-x-2">
+                                    <i class="fa-solid fa-bridge text-yellow-200"></i>
+                                    <span>${opt}</span>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                showScreen(html, false);
+            }
+
+            window.crossBridge = function(chosen) {
+                if (chosen === scenarios[curStep].correct) {
+                    SoundEngine.playCorrect();
+                    curStep++;
+                    if (curStep >= scenarios.length) {
+                        handleLevelComplete(20);
+                    } else {
+                        renderBridge();
+                    }
+                } else {
+                    handleWrongAnswer("Salah pilih jembatan! Perhatikan cerita dengan teliti.");
+                }
+            };
+
+            renderBridge();
+        }
+
+        function level4_LabirinAsmaulHusna() {
+            // Interactive 5x5 Maze grid logic
+            let playerPos = { r: 0, c: 0 };
+            const exitPos = { r: 4, c: 4 };
+
+            // Grid obstacles & question nodes
+            const questionNodes = [
+                { r: 2, c: 1, q: "Sifat Allah Maha Mematikan adalah...", correct: "Al-Mumit", options: ["Al-Mumit", "Al-Muhyi"], solved: false },
+                { r: 3, c: 3, q: "Sifat Allah Maha Membangkitkan adalah...", correct: "Al-Ba’its", options: ["Al-Ba’its", "Al-Qawiyyu"], solved: false }
+            ];
+
+            function renderMaze() {
+                let gridHtml = '';
+                for (let r = 0; r < 5; r++) {
+                    for (let c = 0; c < 5; c++) {
+                        const isPlayer = playerPos.r === r && playerPos.c === c;
+                        const isExit = exitPos.r === r && exitPos.c === c;
+                        const qNode = questionNodes.find(q => q.r === r && q.c === c);
+
+                        let cellContent = '';
+                        let cellBg = 'bg-slate-100 border-slate-300';
+
+                        if (isPlayer) {
+                            cellContent = '🏃';
+                            cellBg = 'bg-amber-300 border-amber-500 font-bold';
+                        } else if (isExit) {
+                            cellContent = '🏛️';
+                            cellBg = 'bg-green-300 border-green-500';
+                        } else if (qNode && !qNode.solved) {
+                            cellContent = '❓';
+                            cellBg = 'bg-purple-200 border-purple-400';
+                        }
+
+                        gridHtml += `
+                            <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl border-2 flex items-center justify-center text-xl shadow-inner ${cellBg}">
+                                ${cellContent}
+                            </div>
+                        `;
+                    }
+                }
+
+                const html = `
+                    <div class="w-full max-w-lg bg-white p-4 sm:p-6 rounded-3xl border-4 border-indigo-400 shadow-xl my-auto text-center flex flex-col items-center">
+                        <div class="flex justify-between items-center w-full mb-3 border-b pb-2">
+                            <span class="text-xs font-bold bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full">LEVEL 4: Labirin Asmaul Husna</span>
+                            <span class="text-xs font-bold text-slate-500">Navigasi ke Gerbang 🏛️</span>
+                        </div>
+
+                        <div class="grid grid-cols-5 gap-2 my-2 bg-slate-200 p-3 rounded-2xl border-2 border-slate-300">
+                            ${gridHtml}
+                        </div>
+
+                        <!-- Touch Navigation Buttons -->
+                        <div class="mt-3 grid grid-cols-3 gap-2 w-48">
+                            <div></div>
+                            <button onclick="moveMaze('up')" class="btn-game bg-indigo-600 text-white py-2 rounded-xl text-lg"><i class="fa-solid fa-arrow-up"></i></button>
+                            <div></div>
+                            <button onclick="moveMaze('left')" class="btn-game bg-indigo-600 text-white py-2 rounded-xl text-lg"><i class="fa-solid fa-arrow-left"></i></button>
+                            <button onclick="moveMaze('down')" class="btn-game bg-indigo-600 text-white py-2 rounded-xl text-lg"><i class="fa-solid fa-arrow-down"></i></button>
+                            <button onclick="moveMaze('right')" class="btn-game bg-indigo-600 text-white py-2 rounded-xl text-lg"><i class="fa-solid fa-arrow-right"></i></button>
+                        </div>
+                    </div>
+                `;
+                showScreen(html, false);
+            }
+
+            window.moveMaze = function(dir) {
+                let nr = playerPos.r;
+                let nc = playerPos.c;
+
+                if (dir === 'up') nr--;
+                if (dir === 'down') nr++;
+                if (dir === 'left') nc--;
+                if (dir === 'right') nc++;
+
+                if (nr >= 0 && nr < 5 && nc >= 0 && nc < 5) {
+                    playerPos = { r: nr, c: nc };
+                    SoundEngine.playClick();
+
+                    // Check Question Node
+                    const qNode = questionNodes.find(q => q.r === nr && q.c === nc);
+                    if (qNode && !qNode.solved) {
+                        askMazeQuestion(qNode);
+                        return;
+                    }
+
+                    // Check Exit
+                    if (nr === exitPos.r && nc === exitPos.c) {
+                        handleLevelComplete(20);
+                        return;
+                    }
+
+                    renderMaze();
+                }
+            };
+
+            function askMazeQuestion(qNode) {
+                const modalBox = document.getElementById('modal-box');
+                modalBox.innerHTML = `
+                    <h3 class="text-lg font-title font-bold text-slate-800 mb-2">Tantangan Labirin! ❓</h3>
+                    <p class="text-xs text-slate-600 mb-4 font-semibold">${qNode.q}</p>
+                    <div class="flex justify-center space-x-3">
+                        ${qNode.options.map(opt => `
+                            <button onclick="answerMazeQ('${opt}', '${qNode.correct}')" class="bg-indigo-600 text-white font-bold text-sm px-4 py-2.5 rounded-xl border-b-2 border-indigo-800">${opt}</button>
+                        `).join('')}
+                    </div>
+                `;
+                document.getElementById('modal-container').classList.remove('hidden');
+
+                window.answerMazeQ = function(answer, correct) {
+                    closeModal();
+                    if (answer === correct) {
+                        SoundEngine.playCorrect();
+                        qNode.solved = true;
+                        renderMaze();
+                    } else {
+                        // Move back
+                        playerPos = { r: 0, c: 0 };
+                        handleWrongAnswer("Jawaban labirin salah! Karakter kembali ke titik awal.");
+                        renderMaze();
+                    }
+                };
+            }
+
+            renderMaze();
+        }
+
+        function level5_HartaKarunAkhlak() {
+            const chests = [
+                {
+                    title: "Peti 1: Sifat Al-Qawiyyu",
+                    prompt: "Sikap tepat meneladani Allah Yang Maha Kuat (Al-Qawiyyu) adalah...",
+                    correct: "Berusaha sungguh-sungguh dan tidak mudah menyerah",
+                    options: [
+                        "Mudah menyerah saat gagal",
+                        "Berusaha sungguh-sungguh dan tidak mudah menyerah",
+                        "Suka mengeluh dan malas belajar"
+                    ]
+                },
+                {
+                    title: "Peti 2: Sifat Al-Qayyum",
+                    prompt: "Sikap tepat meneladani Allah Yang Maha Berdiri Sendiri (Al-Qayyum) adalah...",
+                    correct: "Melatih diri menjadi pribadi yang mandiri",
+                    options: [
+                        "Selalu menyuruh orang lain mengerjakan tugas kita",
+                        "Melatih diri menjadi pribadi yang mandiri",
+                        "Manja dan tidak mau berusaha sendiri"
+                    ]
+                }
+            ];
+
+            let curChest = 0;
+
+            function renderChest() {
+                const c = chests[curChest];
+                const html = `
+                    <div class="w-full max-w-xl bg-white p-5 md:p-6 rounded-3xl border-4 border-amber-500 shadow-xl my-auto text-center">
+                        <div class="flex justify-between items-center mb-3 border-b pb-2">
+                            <span class="text-xs font-bold bg-amber-100 text-amber-800 px-3 py-1 rounded-full">LEVEL 5: Harta Karun Akhlak</span>
+                            <span class="text-xs font-bold text-slate-500">Peti Harta ${curChest+1}/${chests.length}</span>
+                        </div>
+
+                        <div class="text-5xl text-amber-500 my-3 animate-bounce">🎁</div>
+                        <h3 class="text-lg font-title font-bold text-slate-800 mb-1">${c.title}</h3>
+                        <p class="text-xs md:text-sm text-slate-600 font-semibold mb-4">${c.prompt}</p>
+
+                        <div class="flex flex-col gap-2.5">
+                            ${c.options.map(opt => `
+                                <button onclick="openChest('${opt}')" class="btn-game bg-amber-50 hover:bg-amber-500 hover:text-white text-slate-800 font-title text-sm p-3 rounded-xl border-2 border-amber-300 text-left px-4 transition flex items-center justify-between">
+                                    <span>${opt}</span>
+                                    <i class="fa-solid fa-key text-amber-500"></i>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                showScreen(html, false);
+            }
+
+            window.openChest = function(chosen) {
+                if (chosen === chests[curChest].correct) {
+                    SoundEngine.playCorrect();
+                    curChest++;
+                    if (curChest >= chests.length) {
+                        handleLevelComplete(20);
+                    } else {
+                        renderChest();
+                    }
+                } else {
+                    handleWrongAnswer("Pilihan akhlak belum tepat. Pilih sikap terpuji yang sesuai!");
+                }
+            };
+
+            renderChest();
+        }
+
+        function level6_TebakGambar() {
+            const items = [
+                {
+                    icon: "🌱",
+                    title: "Benih Tanaman Tumbuh & Mekar Berseri",
+                    desc: "Kehidupan yang diberikan kepada tumbuhan dan seluruh makhluk hidup menunjukkan sifat Allah...",
+                    correct: "Al-Muhyi",
+                    options: ["Al-Muhyi", "Al-Mumit", "Al-Ba’its", "Al-Qawiyyu"]
+                },
+                {
+                    icon: "☀️",
+                    title: "Hari Kebangkitan Manusia",
+                    desc: "Allah akan membangkitkan seluruh manusia dari alam kubur pada hari akhirat kelak. Sifat ini adalah...",
+                    correct: "Al-Ba’its",
+                    options: ["Al-Qayyum", "Al-Ba’its", "Al-Mumit", "Al-Qawiyyu"]
+                }
+            ];
+
+            let curItem = 0;
+
+            function renderVisualQuiz() {
+                const quiz = items[curItem];
+                const html = `
+                    <div class="w-full max-w-xl bg-white p-5 md:p-6 rounded-3xl border-4 border-teal-400 shadow-xl my-auto text-center">
+                        <div class="flex justify-between items-center mb-3 border-b pb-2">
+                            <span class="text-xs font-bold bg-teal-100 text-teal-800 px-3 py-1 rounded-full">LEVEL 6: Tebak Gambar</span>
+                            <span class="text-xs font-bold text-slate-500">Gambar ${curItem+1}/${items.length}</span>
+                        </div>
+
+                        <div class="w-28 h-28 mx-auto bg-gradient-to-tr from-teal-100 to-emerald-200 rounded-2xl flex items-center justify-center text-6xl shadow-inner border-2 border-teal-300 my-2">
+                            ${quiz.icon}
+                        </div>
+
+                        <h3 class="text-base font-title font-bold text-slate-800 mt-2">${quiz.title}</h3>
+                        <p class="text-xs text-slate-600 mb-4">${quiz.desc}</p>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            ${quiz.options.map(opt => `
+                                <button onclick="guessImage('${opt}')" class="btn-game bg-teal-500 hover:bg-teal-600 text-white font-title font-bold text-base p-3 rounded-xl border-b-4 border-teal-700">
+                                    ${opt}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                showScreen(html, false);
+            }
+
+            window.guessImage = function(chosen) {
+                if (chosen === items[curItem].correct) {
+                    SoundEngine.playCorrect();
+                    curItem++;
+                    if (curItem >= items.length) {
+                        handleLevelComplete(20);
+                    } else {
+                        renderVisualQuiz();
+                    }
+                } else {
+                    handleWrongAnswer("Jawaban tebak gambar salah. Coba amati lagi!");
+                }
+            };
+
+            renderVisualQuiz();
+        }
+
+        function level7_RodaKeberuntungan() {
+            let spinning = false;
+
+            const wheelQuestions = {
+                'Al-Ba’its': { q: "Al-Ba’its artinya Allah Maha...", correct: "Membangkitkan", options: ["Membangkitkan", "Mematikan", "Kuat"] },
+                'Al-Qawiyyu': { q: "Al-Qawiyyu artinya Allah Maha...", correct: "Kuat", options: ["Kuat", "Menghidupkan", "Berdiri Sendiri"] },
+                'Al-Muhyi': { q: "Al-Muhyi artinya Allah Maha...", correct: "Menghidupkan", options: ["Menghidupkan", "Mematikan", "Membangkitkan"] },
+                'Al-Mumit': { q: "Al-Mumit artinya Allah Maha...", correct: "Mematikan", options: ["Mematikan", "Kuat", "Menghidupkan"] }
+            };
+
+            function renderWheel() {
+                const html = `
+                    <div class="w-full max-w-md bg-white p-5 rounded-3xl border-4 border-purple-400 shadow-xl my-auto text-center">
+                        <div class="flex justify-between items-center mb-3 border-b pb-2">
+                            <span class="text-xs font-bold bg-purple-100 text-purple-800 px-3 py-1 rounded-full">LEVEL 7: Roda Keberuntungan</span>
+                            <span class="text-xs font-bold text-amber-600">+20 Bonus</span>
+                        </div>
+
+                        <!-- Wheel Visual -->
+                        <div class="relative w-48 h-48 mx-auto my-4">
+                            <div id="wheel-disc" class="w-full h-full rounded-full border-4 border-purple-600 bg-gradient-to-tr from-purple-500 via-pink-500 to-amber-400 flex items-center justify-center shadow-lg transition-all duration-1000">
+                                <div class="text-white font-title text-xl font-bold">🎯 PUTAR!</div>
+                            </div>
+                            <div class="absolute -top-3 left-1/2 -translate-x-1/2 text-2xl text-red-500">🔻</div>
+                        </div>
+
+                        <button id="btn-spin" onclick="spinWheel()" class="btn-game bg-gradient-to-r from-purple-600 to-pink-600 text-white font-title text-lg px-8 py-3 rounded-2xl border-b-4 border-pink-800">
+                            PUTAR RODA
+                        </button>
+                    </div>
+                `;
+                showScreen(html, false);
+            }
+
+            window.spinWheel = function() {
+                if (spinning) return;
+                spinning = true;
+                SoundEngine.playSpin();
+
+                const disc = document.getElementById('wheel-disc');
+                const randomRot = 1440 + Math.floor(Math.random() * 360);
+                disc.style.transform = `rotate(${randomRot}deg)`;
+
+                setTimeout(() => {
+                    const keys = Object.keys(wheelQuestions);
+                    const selectedName = keys[Math.floor(Math.random() * keys.length)];
+                    askWheelQuestion(selectedName);
+                }, 1200);
+            };
+
+            function askWheelQuestion(nameKey) {
+                const qData = wheelQuestions[nameKey];
+                const modalBox = document.getElementById('modal-box');
+
+                modalBox.innerHTML = `
+                    <div class="text-4xl text-purple-600 mb-2">🎰</div>
+                    <h3 class="text-lg font-title font-bold text-slate-800 mb-1">Pertanyaan Roda: ${nameKey}</h3>
+                    <p class="text-xs text-slate-600 mb-4 font-semibold">${qData.q}</p>
+                    <div class="flex flex-col gap-2">
+                        ${qData.options.map(opt => `
+                            <button onclick="answerWheel('${opt}', '${qData.correct}')" class="bg-purple-600 text-white font-title font-bold text-sm p-2.5 rounded-xl border-b-2 border-purple-800">${opt}</button>
+                        `).join('')}
+                    </div>
+                `;
+                document.getElementById('modal-container').classList.remove('hidden');
+
+                window.answerWheel = function(chosen, correct) {
+                    closeModal();
+                    if (chosen === correct) {
+                        handleLevelComplete(25);
+                    } else {
+                        handleWrongAnswer("Jawaban roda keberuntungan kurang tepat!");
+                    }
+                };
+            }
+
+            renderWheel();
+        }
+
+        function level8_KodeRahasia() {
+            const words = [
+                { scrambled: "Y - Y - U - Q - A - L - M", target: "AL-QAYYUM", hint: "Maha Berdiri Sendiri" },
+                { scrambled: "I - Y - H - U - M - L - A", target: "AL-MUHYI", hint: "Maha Menghidupkan" }
+            ];
+
+            let curWordIdx = 0;
+
+            function renderAnagram() {
+                const item = words[curWordIdx];
+                const html = `
+                    <div class="w-full max-w-md bg-white p-5 rounded-3xl border-4 border-amber-400 shadow-xl my-auto text-center">
+                        <div class="flex justify-between items-center mb-3 border-b pb-2">
+                            <span class="text-xs font-bold bg-amber-100 text-amber-800 px-3 py-1 rounded-full">LEVEL 8: Kode Rahasia</span>
+                            <span class="text-xs font-bold text-slate-500">Kata ${curWordIdx+1}/${words.length}</span>
+                        </div>
+
+                        <div class="text-xs font-bold text-slate-500 mb-1">Petunjuk: ${item.hint}</div>
+                        <div class="bg-amber-100 p-4 rounded-2xl border-2 border-amber-300 font-title text-2xl font-bold text-amber-900 tracking-widest my-3">
+                            ${item.scrambled}
+                        </div>
+
+                        <input id="input-anagram" type="text" placeholder="Ketik kata yang tepat..." class="w-full p-3 rounded-xl border-2 border-slate-300 font-title text-center text-lg uppercase mb-4 focus:outline-amber-500">
+
+                        <button onclick="checkAnagram()" class="btn-game bg-amber-500 hover:bg-amber-600 text-white font-title text-base w-full py-3 rounded-xl border-b-4 border-amber-700">
+                            BUKA KODE
+                        </button>
+                    </div>
+                `;
+                showScreen(html, false);
+            }
+
+            window.checkAnagram = function() {
+                const inputVal = document.getElementById('input-anagram').value.trim().toUpperCase().replace(/\s+/g, '');
+                const targetClean = words[curWordIdx].target.replace(/[-]/g, '');
+
+                if (inputVal === targetClean || inputVal === words[curWordIdx].target) {
+                    SoundEngine.playCorrect();
+                    curWordIdx++;
+                    if (curWordIdx >= words.length) {
+                        handleLevelComplete(20);
+                    } else {
+                        renderAnagram();
+                    }
+                } else {
+                    handleWrongAnswer("Susunan kata belum tepat! Coba periksa kembali ejaannya.");
+                }
+            };
+
+            renderAnagram();
+        }
+
+        function level9_PertarunganPengetahuan() {
+            let bossHp = 100;
+            const questions = [
+                { q: "Allah Maha Kuat dinamakan...", correct: "Al-Qawiyyu", options: ["Al-Qawiyyu", "Al-Muhyi"] },
+                { q: "Allah Maha Mematikan dinamakan...", correct: "Al-Mumit", options: ["Al-Ba’its", "Al-Mumit"] },
+                { q: "Allah Maha Membangkitkan dinamakan...", correct: "Al-Ba’its", options: ["Al-Ba’its", "Al-Qayyum"] }
+            ];
+
+            let qIdx = 0;
+
+            function renderBattle() {
+                const qData = questions[qIdx];
+                const html = `
+                    <div class="w-full max-w-lg bg-white p-5 rounded-3xl border-4 border-red-400 shadow-xl my-auto text-center">
+                        <div class="flex justify-between items-center mb-3 border-b pb-2">
+                            <span class="text-xs font-bold bg-red-100 text-red-800 px-3 py-1 rounded-full">LEVEL 9: Pertarungan Pengetahuan</span>
+                            <span class="text-xs font-bold text-slate-500">Lawan Penjaga Gerbang</span>
+                        </div>
+
+                        <!-- Boss Visual & Health Bar -->
+                        <div class="bg-red-50 p-4 rounded-2xl border border-red-200 mb-4">
+                            <div class="text-5xl mb-2 animate-pulse">👹 Penjaga Gerbang</div>
+                            <div class="text-xs font-bold text-red-700 mb-1">Energi Penjaga: ${bossHp}%</div>
+                            <div class="w-full bg-slate-200 h-3 rounded-full overflow-hidden border border-slate-300">
+                                <div class="bg-red-600 h-full transition-all duration-300" style="width: ${bossHp}%"></div>
+                            </div>
+                        </div>
+
+                        <div class="text-sm font-title font-bold text-slate-800 mb-3">"${qData.q}"</div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            ${qData.options.map(opt => `
+                                <button onclick="attackBoss('${opt}')" class="btn-game bg-red-600 hover:bg-red-700 text-white font-title font-bold text-base p-3 rounded-xl border-b-4 border-red-900">
+                                    ⚔️ ${opt}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                showScreen(html, false);
+            }
+
+            window.attackBoss = function(chosen) {
+                if (chosen === questions[qIdx].correct) {
+                    SoundEngine.playCorrect();
+                    bossHp -= 35;
+                    qIdx++;
+                    if (qIdx >= questions.length || bossHp <= 0) {
+                        handleLevelComplete(30);
+                    } else {
+                        renderBattle();
+                    }
+                } else {
+                    handleWrongAnswer("Seranganmu meleset karena jawaban salah! Penjaga gerbang menyerang balik!");
+                }
+            };
+
+            renderBattle();
+        }
+
+        function level10_KuilAsmaulHusna() {
+            const finalQuestions = [
+                {
+                    q: "Selamat datang di Kuil Asmaul Husna! Pertanyaan Terakhir: Manakah yang merupakan arti dari Al-Qayyum?",
+                    correct: "Maha Berdiri Sendiri",
+                    options: ["Maha Membangkitkan", "Maha Berdiri Sendiri", "Maha Kuat"]
+                }
+            ];
+
+            function renderFinalQuest() {
+                const q = finalQuestions[0];
+                const html = `
+                    <div class="w-full max-w-lg bg-gradient-to-b from-amber-500 to-orange-600 text-white p-6 rounded-3xl border-4 border-yellow-300 shadow-2xl my-auto text-center">
+                        <div class="text-6xl mb-3 animate-float">🏛️</div>
+                        <h2 class="text-2xl font-title font-bold text-yellow-200 mb-2">LEVEL 10: KUIL ASMAUL HUSNA</h2>
+                        <p class="text-xs text-amber-100 mb-6">Tantangan Terakhir Petualangan!</p>
+
+                        <div class="bg-amber-900/50 p-4 rounded-2xl border border-amber-300/40 text-sm font-semibold mb-6">
+                            "${q.q}"
+                        </div>
+
+                        <div class="flex flex-col gap-3">
+                            ${q.options.map(opt => `
+                                <button onclick="finishFinalQuest('${opt}')" class="btn-game bg-yellow-400 hover:bg-yellow-300 text-amber-950 font-title font-bold text-lg p-3.5 rounded-2xl border-b-4 border-amber-700">
+                                    ${opt}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                showScreen(html, false);
+            }
+
+            window.finishFinalQuest = function(chosen) {
+                if (chosen === finalQuestions[0].correct) {
+                    SoundEngine.playVictory();
+                    handleLevelComplete(50);
+                } else {
+                    handleWrongAnswer("Hampir tepat! Tinjau kembali makna Al-Qayyum.");
+                }
+            };
+
+            renderFinalQuest();
+        }
+
+        function renderAssessmentScreen() {
+            const assessmentQuestions = [
+                { q: "1. Asmaul Husna Al-Qawiyyu artinya Allah SWT...", options: ["Maha Mematikan", "Maha Kuat", "Maha Menghidupkan", "Maha Membangkitkan"], correct: 1 },
+                { q: "2. Meneladani sifat Al-Qayyum dilakukan dengan cara...", options: ["Manja kepada orang tua", "Belajar mandiri", "Mudah menyerah", "Suka mengeluh"], correct: 1 },
+                { q: "3. Allah yang memberi kehidupan kepada hewan dan manusia adalah makna sifat...", options: ["Al-Muhyi", "Al-Mumit", "Al-Ba’its", "Al-Qawiyyu"], correct: 0 },
+                { q: "4. Mengingat bahwa usia di dunia terbatas karena Allah memiliki sifat...", options: ["Al-Mumit", "Al-Qayyum", "Al-Qawiyyu", "Al-Muhyi"], correct: 0 },
+                { q: "5. Allah akan membangkitkan manusia dari alam kubur pada hari pembalasan, yaitu sifat...", options: ["Al-Qawiyyu", "Al-Muhyi", "Al-Ba’its", "Al-Qayyum"], correct: 2 },
+                { q: "6. Doni tidak mudah putus asa saat menghadapi ujian sekolah. Doni meneladani sifat...", options: ["Al-Qawiyyu", "Al-Mumit", "Al-Ba’its", "Al-Qayyum"], correct: 0 },
+                { q: "7. Sikap menyayangi tanaman dan hewan sekitar merupakan bukti rasa syukur atas sifat...", options: ["Al-Muhyi", "Al-Mumit", "Al-Qayyum", "Al-Ba’its"], correct: 0 },
+                { q: "8. Perbedaan makna Al-Muhyi dan Al-Mumit adalah...", options: ["Al-Muhyi Maha Kuat, Al-Mumit Maha Menghidupkan", "Al-Muhyi Maha Menghidupkan, Al-Mumit Maha Mematikan", "Al-Muhyi Maha Membangkitkan, Al-Mumit Maha Berdiri Sendiri", "Tidak ada perbedaan"], correct: 1 },
+                { q: "9. Memperbanyak bekal amal saleh untuk akhirat adalah bentuk keimanan terhadap...", options: ["Al-Ba’its", "Al-Qawiyyu", "Al-Muhyi", "Al-Qayyum"], correct: 0 },
+                { q: "10. Sifat Allah yang menegakkan dan tidak memerlukan bantuan siapapun adalah...", options: ["Al-Qayyum", "Al-Mumit", "Al-Muhyi", "Al-Ba’its"], correct: 0 }
+            ];
+
+            let userAnswers = new Array(10).fill(null);
+
+            function renderQuizPaper() {
+                const itemsHtml = assessmentQuestions.map((item, idx) => `
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm text-left mb-4">
+                        <div class="font-title font-bold text-slate-800 text-sm md:text-base mb-3">${item.q}</div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            ${item.options.map((opt, optIdx) => {
+                                const isSelected = userAnswers[idx] === optIdx;
+                                return `
+                                    <button onclick="selectAssessmentAns(${idx}, ${optIdx})" class="p-2.5 rounded-xl border text-xs md:text-sm font-semibold text-left transition ${isSelected ? 'bg-amber-500 text-white border-amber-700 font-bold' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-300'}">
+                                        ${String.fromCharCode(65 + optIdx)}. ${opt}
+                                    </button>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `).join('');
+
+                const html = `
+                    <div class="w-full max-w-2xl flex flex-col my-auto p-2">
+                        <div class="bg-white p-4 rounded-3xl border-4 border-amber-400 shadow-xl mb-4 text-center">
+                            <h2 class="text-2xl font-title font-bold text-amber-600">🎓 UJI PEMAHAMANMU!</h2>
+                            <p class="text-xs text-slate-500">Jawab 10 soal di bawah ini untuk menguji pengetahuan Asmaul Husna.</p>
+                        </div>
+
+                        <div class="max-h-[460px] overflow-y-auto pr-1">
+                            ${itemsHtml}
+                        </div>
+
+                        <div class="mt-4 text-center">
+                            <button onclick="submitAssessment()" class="btn-game bg-gradient-to-r from-emerald-500 to-green-600 text-white font-title text-xl px-10 py-3.5 rounded-2xl border-b-4 border-green-800 shadow-lg">
+                                KIRIM JAWABAN
+                            </button>
+                        </div>
+                    </div>
+                `;
+                showScreen(html, false);
+            }
+
+            window.selectAssessmentAns = function(qIdx, optIdx) {
+                SoundEngine.playClick();
+                userAnswers[qIdx] = optIdx;
+                renderQuizPaper();
+            };
+
+            window.submitAssessment = function() {
+                if (userAnswers.includes(null)) {
+                    const modalBox = document.getElementById('modal-box');
+                    modalBox.innerHTML = `
+                        <h3 class="text-lg font-title font-bold text-red-600 mb-2">Soal Belum Lengkap!</h3>
+                        <p class="text-xs text-slate-600 mb-4">Harap jawab semua 10 pertanyaan terlebih dahulu sebelum mengirim jawaban.</p>
+                        <button onclick="closeModal()" class="bg-red-500 text-white font-bold px-6 py-2 rounded-xl">Mengerti</button>
+                    `;
+                    document.getElementById('modal-container').classList.remove('hidden');
+                    return;
+                }
+
+                // Calculate Score
+                let correctCount = 0;
+                assessmentQuestions.forEach((q, idx) => {
+                    if (userAnswers[idx] === q.correct) correctCount++;
+                });
+
+                const finalScore = correctCount * 10;
+                gameState.assessmentCompleted = true;
+                gameState.assessmentScore = finalScore;
+                saveState();
+
+                renderAssessmentResults(finalScore, correctCount);
+            };
+
+            renderQuizPaper();
+        }
+
+        function renderAssessmentResults(score, correctCount) {
+            let feedbackCategory = "";
+            let badgeIcon = "";
+
+            if (score >= 90) {
+                feedbackCategory = "Luar Biasa! Pemahamanmu sangat baik!";
+                badgeIcon = "🏆 Medali Emas";
+            } else if (score >= 80) {
+                feedbackCategory = "Hebat! Kamu sudah memahami materi dengan baik!";
+                badgeIcon = "🥇 Medali Perak";
+            } else if (score >= 70) {
+                feedbackCategory = "Bagus! Terus berlatih agar semakin memahami materi.";
+                badgeIcon = "🥉 Medali Perunggu";
+            } else {
+                feedbackCategory = "Tetap semangat! Yuk, pelajari kembali materi dan coba lagi.";
+                badgeIcon = "🎗️ Lencana Peserta";
+            }
+
+            const html = `
+                <div class="w-full max-w-xl bg-white p-6 rounded-3xl border-4 border-amber-400 shadow-2xl my-auto text-center">
+                    <div class="text-5xl text-yellow-400 mb-2 animate-bounce">🎖️</div>
+                    <h2 class="text-2xl font-title font-bold text-amber-600 mb-1">HASIL ASESMEN AKHIR</h2>
+                    <p class="text-xs text-slate-500 mb-4">Petualangan Mengenal Asmaul Husna</p>
+
+                    <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200 mb-6">
+                        <div class="text-4xl font-title font-bold text-amber-700 mb-1">${score} / 100</div>
+                        <div class="text-xs font-bold text-slate-600 mb-2">Jawaban Benar: ${correctCount} dari 10 Soal</div>
+                        <div class="text-sm font-title font-bold text-emerald-600">${feedbackCategory}</div>
+                        <div class="mt-2 inline-block bg-amber-200 text-amber-900 text-xs font-bold px-3 py-1 rounded-full">${badgeIcon}</div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                        <button onclick="SoundEngine.playClick(); renderAssessmentScreen();" class="btn-game bg-amber-500 hover:bg-amber-600 text-white font-title text-base py-3 px-6 rounded-xl border-b-4 border-amber-700">
+                            🔄 Coba Lagi
+                        </button>
+                        <button onclick="SoundEngine.playClick(); renderMaterialScreen();" class="btn-game bg-blue-600 hover:bg-blue-700 text-white font-title text-base py-3 px-6 rounded-xl border-b-4 border-blue-800">
+                            📖 Pelajari Materi Kembali
+                        </button>
+                    </div>
+                </div>
+            `;
+            showScreen(html, false);
+        }
+
+        window.onload = function() {
+            loadSavedState();
+            renderCoverScreen();
+        };
+    </script>
+</body>
+</html>
